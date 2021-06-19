@@ -12,6 +12,10 @@ public class WaterParticle : MonoBehaviour
 
     public double t = 0.02;
 
+    public int randr = 3;
+
+    public float prand = 0.1f;
+
     public GameObject pcobj;
 
     public PhysicsCode PhysicsCalc;
@@ -22,7 +26,7 @@ public class WaterParticle : MonoBehaviour
         surface = 3.1415 * r * r;
         transform.localScale = new Vector3(r, r, r);
         Vector3 curpos = transform.localPosition;
-        curpos = curpos + new Vector3(0.1f * Random.Range(-3, 3), 0.1f * Random.Range(-3, 3), 0.1f * Random.Range(-3, 3));
+        curpos = curpos + new Vector3(prand * Random.Range(-1 * randr, randr), prand * Random.Range(-1 * randr, randr), prand * Random.Range(-1 * randr, randr));
         transform.localPosition = curpos;
         PhysicsCalc = (PhysicsCode) pcobj.GetComponent<PhysicsCode>();
     }

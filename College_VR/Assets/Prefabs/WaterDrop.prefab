@@ -109,5 +109,7 @@ MonoBehaviour:
   surface: 0
   r: 0.5
   t: 0.02
+  randr: 3
+  prand: 0.02
   pcobj: {fileID: 0}
   PhysicsCalc: {fileID: 0}
