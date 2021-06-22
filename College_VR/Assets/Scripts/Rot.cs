@@ -10,7 +10,7 @@ public class Rot : MonoBehaviour
     private const float surface = 0.48f;
     private const float rope_length = 12.5f; //0.8m
 
-    private Vector3 eulerAngs;
+    private Vector3 eulerAngs1, eulerAngs2;
     private float total_mass;
 
     public int liters_of_paint = 18;
@@ -33,7 +33,8 @@ public class Rot : MonoBehaviour
     void Start1()
     {
         total_mass = bucket_mass + liters_of_paint * paint_liter_mass;
-        eulerAngs = Vector3.zero;
+        eulerAngs1 = Vector3.zero;
+        eulerAngs2 = Vector3.zero;
         transform.localScale = new Vector3(r, r, r);
         Vector3 curpos = transform.localPosition;
         curpos = curpos + new Vector3(prand * Random.Range(-1 * randr, randr), prand * Random.Range(-1 * randr, randr), prand * Random.Range(-1 * randr, randr));
@@ -97,12 +98,15 @@ public class Rot : MonoBehaviour
         //transform.eulerAngles = transform.eulerAngles + new Vector3(0f, 0f, -45f);
 
         total_mass = bucket_mass + liters_of_paint * paint_liter_mass;
-        eulerAngs = Vector3.zero;
+        eulerAngs1 = Vector3.zero;
+        eulerAngs2 = Vector3.zero;
         curtime = 0f;
 
-        eulerAngs = new Vector3(theta_max1, 0f, 0f);
+        eulerAngs1 = new Vector3(theta_max1, 0f, 0f);
+        eulerAngs2 = new Vector3(0f, theta_max2, 0f);
 
-        transform.eulerAngles = eulerAngs;
+        //transform.GetChild(0).eulerAngles = eulerAngs2;
+        transform.eulerAngles = eulerAngs1;
 
     }
 
@@ -119,14 +123,22 @@ public class Rot : MonoBehaviour
         //eulerAngs = new Vector3(eulerAngs.x + velocity, 0f, 0f);
 
         //-g sin(theta)
+
+        //float acc2 = -1f * total_mass * 9.8f * Mathf.Sin(eulerAngs2.y / 180f) / 0.8f;
+        ////velocity = velocity + acc2 * 0.02f;
+        //v2 = v2 + acc * 0.02f;
+
+        //eulerAngs2 = new Vector3(eulerAngs2.x, eulerAngs2.y + v2 * 0.02f, eulerAngs2.z);
+
+        //transform.GetChild(0).eulerAngles = eulerAngs2;
         
         //float force = total_mass * 9.8f * Mathf.Sin(eulerAngs.x / 180f);
-        float acc = -1f * total_mass * 9.8f * Mathf.Sin(eulerAngs.x / 180f) / 0.8f;
+        float acc = -1f * total_mass * 9.8f * Mathf.Sin(eulerAngs1.x / 180f) / 0.8f;
         //velocity = velocity + acc * 0.02f;
         v1 = v1 + acc * 0.02f;
 
-        eulerAngs = new Vector3(eulerAngs.x + v1 * 0.02f, eulerAngs.y, eulerAngs.z);
+        eulerAngs1 = new Vector3(eulerAngs1.x + v1 * 0.02f, eulerAngs1.y, eulerAngs1.z);
 
-        transform.eulerAngles = eulerAngs;
+        transform.eulerAngles = eulerAngs1;
     }
 }
