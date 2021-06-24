@@ -22,12 +22,18 @@ public class Rot : MonoBehaviour
     private float theta_max1 = 60f;
     private float theta_max2 = 60f;
 
-    private float theta = 45f;
-    private float phi = -90f;
+    private float theta = 1.5f * 180f;
+    private float phi = 0f;
+    private float prev_theta = 45f;
+    private float prev_phi = -90f;
     private float vtheta = 0f;
-    private float vphi = 0f;
+    private float vphi = 0.5f;
     private float atheta = 0f;
     private float aphi = 0f;
+
+    private float tm = 0.0f;
+    private float delta_t = 0.02f;
+    private float[] y = { 0.0f, 0.5f, 1.5f, 0f };
 
     public int randr = 3;
     public float prand = 0.1f;
@@ -39,27 +45,76 @@ public class Rot : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+
 
         total_mass = bucket_mass + liters_of_paint * paint_liter_mass;
 
-        eulerAngs = new Vector3(0f, -1f*phi, -1f*theta);
+        eulerAngs = new Vector3(0f, -1f * y[3] * 180f, -1f * y[2] * 180f);
 
         transform.Rotate(Vector3.forward, eulerAngs.z, Space.World);
         transform.Rotate(Vector3.up, eulerAngs.y, Space.World);
 
     }
+    
+    void ApplyRotation()
+    {
+        transform.Rotate(Vector3.up, phi - prev_phi, Space.World);
+        transform.Rotate(Vector3.forward, theta - prev_theta, Space.Self);
+    }
+
+    float[] G(float[] y, float t)
+    {
+        atheta = y[1] * y[1] * Mathf.Sin(y[2]) * Mathf.Cos(y[2]) - 9.8f / 4.5f * Mathf.Sin(y[2]);
+        aphi = -2f * y[0] * y[1] * (1f / Mathf.Tan(y[2]));
+        return new float[4]{atheta, aphi, y[0], y[1]};
+    }
+
+    float[] RK4Step(float[] y, float t, float dt)
+    {
+        float[] tmp = new float[4];
+        float[] k1 = G(y,t);
+        for (int i = 0; i < 4; i++)
+        {
+            tmp[i] = y[i] + 0.5f * k1[i] * dt;
+        }
+        float[] k2 = G(tmp, t + 0.5f * dt);
+        for (int i = 0; i < 4; i++)
+        {
+            tmp[i] = y[i] + 0.5f * k2[i] * dt;
+        }
+        float[] k3 = G(tmp, t + 0.5f * dt);
+        for (int i = 0; i < 4; i++)
+        {
+            tmp[i] = y[i] + k3[i] * dt;
+        }
+        float[] k4 = G(tmp, t + dt);
+        for (int i = 0; i < 4; i++)
+        {
+            tmp[i] = dt * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) / 6f;
+        }
+
+        return tmp;
+    }
 
     void Update()
     {
-        // 90y 10theta
-
-        if(phi < 90)
+        prev_theta = theta;
+        theta = y[2] * 180f;
+        prev_phi = phi;
+        phi = y[3] * 180f;
+        ApplyRotation();
+        tm += delta_t;
+        float[] tmp = RK4Step(y, tm, delta_t);
+        for(int i=0;i<4;i++)
         {
-            phi += 0.9f;
-            transform.Rotate(Vector3.up, 0.9f, Space.World);
-            transform.Rotate(Vector3.forward, 0.3f, Space.Self);
+            y[i] += tmp[i];
         }
+        //if (phi < 90)
+        //{
+        //    phi += 0.9f;
+        //    transform.Rotate(Vector3.up, 0.9f, Space.World);
+        //    transform.Rotate(Vector3.forward, 0.3f, Space.Self);
+        //}
 
         // - 30 * abs(cos(phi))
         //phi += 4f;

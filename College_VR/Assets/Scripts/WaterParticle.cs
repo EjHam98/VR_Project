@@ -36,22 +36,22 @@ public class WaterParticle : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //float t = Time.deltaTime;
-        //if(transform.localPosition.y < -1 || transform.localPosition.y > 100)
-        //{
-        //    Destroy(gameObject);
-        //}
-        //float total_force = PhysicsCalc.getGravity(mass) - PhysicsCalc.getAirResistance(surface, velocity);
-        //float acceleration = total_force / mass;
-        //float speed = velocity + abs_dbl(acceleration) * t;
-        //if (acceleration >= 0)
-        //{
-        //    transform.localPosition = new Vector3((float)transform.localPosition.x, (float)(transform.localPosition.y - speed * t), (float)transform.localPosition.z);
-        //}
-        //else
-        //{
-        //    transform.localPosition = new Vector3((float)transform.localPosition.x, (float)(transform.localPosition.y + speed * t), (float)transform.localPosition.z);
-        //}
-        //velocity = speed;
+        float t = Time.deltaTime;
+        if (transform.localPosition.y < -1 || transform.localPosition.y > 100)
+        {
+            Destroy(gameObject);
+        }
+        float total_force = -PhysicsCalc.getGravity(mass).y - PhysicsCalc.getAirResistance(surface, velocity);
+        float acceleration = total_force / mass;
+        float speed = velocity + abs_dbl(acceleration) * t;
+        if (acceleration >= 0)
+        {
+            transform.localPosition = new Vector3((float)transform.localPosition.x, (float)(transform.localPosition.y - speed * t), (float)transform.localPosition.z);
+        }
+        else
+        {
+            transform.localPosition = new Vector3((float)transform.localPosition.x, (float)(transform.localPosition.y + speed * t), (float)transform.localPosition.z);
+        }
+        velocity = speed;
     }
 }

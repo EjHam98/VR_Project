@@ -17,7 +17,7 @@ public class Spawner : MonoBehaviour
     void Start()
     {
         steps = 9;
-        step_size = 0.05f;
+        step_size = 0.01f;
     }
 
     private void Spawn()
