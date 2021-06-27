@@ -1,41 +1,34 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Assets.Scripts;
 
 public class WaterParticle : MonoBehaviour
 {
-    public double mass = 0.05;
-    public double velocity = 0;
-    public double surface = 0;
+    public float mass = 0.05f;
+    public float velocity = 0f;
+    public float surface = 0f;
+    public float r = 0.1f;
 
-    public float r = 0.5f;
+    private PhysicsCode PhysicsCalc = null;
 
-    public double t = 0.02;
-
-    public int randr = 3;
-
-    public float prand = 0.1f;
-
-    public GameObject pcobj;
-
-    public PhysicsCode PhysicsCalc;
     // Start is called before the first frame update
     void Start()
     {
+        mass = 0.05f;
+        velocity = 0f;
+        surface = 0f;
         r = 0.1f;
-        surface = 3.1415 * r * r;
+        surface = 3.1415f * r * r;
         transform.localScale = new Vector3(r, r, r);
-        Vector3 curpos = transform.localPosition;
-        curpos = curpos + new Vector3(prand * Random.Range(-1 * randr, randr), prand * Random.Range(-1 * randr, randr), prand * Random.Range(-1 * randr, randr));
-        transform.localPosition = curpos;
-        PhysicsCalc = (PhysicsCode) pcobj.GetComponent<PhysicsCode>();
+        PhysicsCalc = new PhysicsCode();
     }
 
-    private double abs_dbl(double x)
+    private float abs_dbl(float x)
     {
         if (x < 0)
         {
-            return -1.0 * x;
+            return -1.0f * x;
         }
         return x;
     }
@@ -43,13 +36,14 @@ public class WaterParticle : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(transform.localPosition.y < -1 || transform.localPosition.y > 100)
+        float t = Time.deltaTime;
+        if (transform.localPosition.y < -1 || transform.localPosition.y > 100)
         {
             Destroy(gameObject);
         }
-        double total_force = PhysicsCalc.getGravity(mass) - PhysicsCalc.getAirResistance(surface, velocity);
-        double acceleration = total_force / mass;
-        double speed = velocity + abs_dbl(acceleration) * t;
+        float total_force = -PhysicsCalc.getGravity(mass).y - PhysicsCalc.getAirResistance(surface, velocity);
+        float acceleration = total_force / mass;
+        float speed = velocity + abs_dbl(acceleration) * t;
         if (acceleration >= 0)
         {
             transform.localPosition = new Vector3((float)transform.localPosition.x, (float)(transform.localPosition.y - speed * t), (float)transform.localPosition.z);
