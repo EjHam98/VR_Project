@@ -11,13 +11,17 @@ public class Rot : MonoBehaviour
     private const float rope_length = 12.5f; //0.8m
 
     private int State = 0;
+    private int speedup = 1;
+
+    public LineRenderer line;
+    public int currlines = 0;
 
     private Vector3 eulerAngs, eulerAngs1, eulerAngs2;
     private float total_mass;
 
     private float theangle = 0.25f;
 
-    public int liters_of_paint = 18;
+    public float liters_of_paint = 18f;
     private float velocity = 0f;
     private float r = 0.1f;
 
@@ -26,10 +30,12 @@ public class Rot : MonoBehaviour
     private float theta_max1 = 60f;
     private float theta_max2 = 60f;
 
-    private float theta = 0.35f;
-    private float phi = 0f;
-    private float prev_theta = 0f;
-    private float prev_phi = 0f;
+    public Vector3 pos1, pos2;
+
+    public float theta = 0.35f;
+    public float phi = 0f;
+    public float prev_theta = 0f;
+    public float prev_phi = 0f;
     private float vtheta = 0f;
     private float vphi = 0.5f;
     private float atheta = 0f;
@@ -53,7 +59,8 @@ public class Rot : MonoBehaviour
     void Start()
     {
 
-
+        line.positionCount = 0;
+        //line.SetPosition(0, Vector3.zero);
         total_mass = bucket_mass + liters_of_paint * paint_liter_mass;
 
         eulerAngs = new Vector3(0f, -1f * y[3] * 180f, -1f * y[2] * 180f);
@@ -64,6 +71,10 @@ public class Rot : MonoBehaviour
         theta = theangle;
         prev_phi = 0;
         prev_theta = 0;
+        pos1 = Vector3.zero;
+        pos2 = Vector3.zero;
+        transform.GetChild(3).localScale = new Vector3(transform.GetChild(3).localScale.x, Mathf.Max(0, transform.GetChild(3).localScale.y - (transform.GetChild(3).localScale.y / 40000f) * tm), transform.GetChild(3).localScale.z);
+        transform.GetChild(3).localPosition = new Vector3(transform.GetChild(3).localPosition.x, -15.7f + (transform.GetChild(3).GetComponent<Renderer>().bounds.size.y * transform.GetChild(3).localScale.y / 2f), transform.GetChild(3).localPosition.z);
         //ApplyMovement();
         //transform.GetChild(0).transform.Rotate(Vector3.up, y[3] * 180f, Space.Self);
         //transform.GetChild(0).transform.Rotate(Vector3.forward, -1f * y[2] * 180f, Space.Self);
@@ -72,15 +83,106 @@ public class Rot : MonoBehaviour
 
     void ApplyRotation()
     {
-        transform.Rotate(Vector3.up, (phi - prev_phi) * 60f, Space.World);
+        if(Mathf.Abs(theta - prev_theta) <= 0.005f && Mathf.Abs(theta) <= 0.001f)
+        {
+            State = 0;
+            theta = theangle;
+            phi = 0f;
+            prev_theta = 0f;
+            prev_phi = 0f;
+            y[0] = 0f;
+            y[1] = 0.5f;
+            y[2] = theangle;
+            y[3] = 0f;
+            tm = 0;
+            transform.GetChild(0).transform.localPosition = new Vector3(0f, -15f, 0f);
+            transform.GetChild(2).transform.localPosition = new Vector3(0f, -15f, 0f);
+            transform.GetChild(3).transform.localPosition = new Vector3(0f, -15.17f, 0f);
+            transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0);
+            //transform.GetChild(0).transform.eulerAngles = Vector3.zero;
+            return;
+        }
+        Vector3 old_pos = transform.GetChild(0).transform.position;
+        pos1 = old_pos;
+        if (old_pos.x >= -7.5 && old_pos.x <= 7.5 && old_pos.z >= -7.5 && old_pos.z <= 7.5)
+        {
+            old_pos.y = 0.21f;
+        }
+        if (old_pos.x < -7.5 || old_pos.x > 7.5 || old_pos.z < -7.5 || old_pos.z > 7.5)
+        {
+            old_pos.y = 0.01f;
+        }
+        transform.Rotate(Vector3.up, (phi - prev_phi) * -60f, Space.World);
+        //transform.Rotate(Vector3.up, (phi - prev_phi) * 60f, Space.Self);
         transform.Rotate(Vector3.forward, (theta - prev_theta) * 180f, Space.Self);
+        transform.GetChild(0).transform.Rotate(Vector3.up, (phi - prev_phi) * 60f, Space.Self);
+        transform.GetChild(1).transform.Rotate(Vector3.up, (phi - prev_phi) * 60f, Space.Self);
+        transform.GetChild(2).transform.Rotate(Vector3.up, (phi - prev_phi) * 60f, Space.Self);
+        Vector3 new_pos = transform.GetChild(0).transform.position;
+        pos2 = new_pos;
+        if (new_pos.x >= -7.5 && new_pos.x <= 7.5 && new_pos.z >= -7.5 && new_pos.z <= 7.5)
+        {
+            new_pos.y = 0.21f;
+        }
+        if (new_pos.x < -7.5 || new_pos.x > 7.5 || new_pos.z < -7.5 || new_pos.z > 7.5)
+        {
+            new_pos.y = 0.01f;
+        }
+
+        //if(prev_phi != 0 && prev_theta != 0)
+        //{
+        //    line.startColor = Color.white;
+        //    line.endColor = Color.white;
+
+        //    line.startWidth = 0.3f;
+        //    line.endWidth = 0.3f;
+
+        //    if(currlines==0)
+        //    {
+        //        line.positionCount+=2;
+        //        //old_pos = old_pos * -1;
+        //        line.SetPosition(currlines, old_pos);
+        //        currlines++;
+        //        //new_pos = new_pos * -1;
+        //        line.SetPosition(currlines, new_pos);
+        //        currlines++;
+
+        //    }
+        //    else
+        //    {
+        //        line.positionCount += 1;
+        //        //new_pos = new_pos * -1;
+        //        line.SetPosition(currlines, new_pos);
+        //        currlines++;
+        //    }
+
+        //    // set the position
+        //    //currlines++;
+        //}
+    }
+
+    int SignOf(float num)
+    {
+        if(num < 0)
+        {
+            return -1;
+        }
+        return 1;
     }
 
     float[] G(float[] y, float t)
     {
         atheta = y[1] * y[1] * Mathf.Sin(y[2]) * Mathf.Cos(y[2]) - 9.8f / 4.5f * Mathf.Sin(y[2]);
+        if(Mathf.Abs(y[2]) <= 0.001f)
+        {
+            aphi = 0;
+        }
         aphi = -2f * y[0] * y[1] * (1f / Mathf.Tan(y[2]));
-        return new float[4] { atheta, aphi, y[0], y[1] };
+
+        //atheta = SignOf(atheta) * (Mathf.Abs(atheta) + t * 0.1f);
+        //aphi = SignOf(aphi) * (Mathf.Abs(aphi) + t * 0.1f);
+
+        return new float[4] { atheta, aphi, y[0] - 0.003f, y[1] - 0.003f };
     }
 
     void ApplyMovement()
@@ -149,13 +251,13 @@ public class Rot : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.I))
         {
             State = 2;
-            theta = 0.5f;
+            theta = theangle;
             phi = 0f;
             prev_theta = 0f;
             prev_phi = 0f;
             y[0] = 0f;
             y[1] = 0.5f;
-            y[2] = 0.5f;
+            y[2] = theangle;
             y[3] = 0f;
             tm = 0;
             transform.GetChild(0).transform.localPosition = new Vector3(0f, -15f, 0f);
@@ -166,6 +268,7 @@ public class Rot : MonoBehaviour
         }
         if (Input.GetKeyUp(KeyCode.O))
         {
+            line.positionCount = 0;
             State = 0;
             theta = theangle;
             phi = 0f;
@@ -184,18 +287,23 @@ public class Rot : MonoBehaviour
         }
         if (State == 1)
         {
-            ApplyRotation();
-            tm += delta_t;
-            float[] tmp = RK4Step(y, tm, delta_t);
-            for (int i = 0; i < 4; i++)
+            for(int q=0;q<speedup;q++)
             {
-                y[i] += tmp[i];
-            }
+                transform.GetChild(3).localScale = new Vector3(transform.GetChild(3).localScale.x, Mathf.Max(0, transform.GetChild(3).localScale.y - (transform.GetChild(3).localScale.y/40000f) * tm), transform.GetChild(3).localScale.z);
+                transform.GetChild(3).localPosition = new Vector3(transform.GetChild(3).localPosition.x, -16f + (transform.GetChild(3).GetComponent<Renderer>().bounds.size.y*transform.GetChild(3).localScale.y/2f), transform.GetChild(3).localPosition.z);
+                ApplyRotation();
+                tm += delta_t;
+                float[] tmp = RK4Step(y, tm, delta_t);
+                for (int i = 0; i < 4; i++)
+                {
+                    y[i] += tmp[i];
+                }
 
-            prev_theta = theta;
-            theta = y[2];
-            prev_phi = phi;
-            phi = y[3];
+                prev_theta = theta;
+                theta = y[2];
+                prev_phi = phi;
+                phi = y[3];
+            }
         }
         else if (State == 2)
         {
@@ -206,6 +314,9 @@ public class Rot : MonoBehaviour
             {
                 y[i] += tmp[i];
             }
+            //ApplyRotation();
+            //prev_phi = phi;
+            //prev_theta = theta;
         }
         //if (phi < 90)
         //{
