@@ -17,9 +17,13 @@ public class WaterParticle : MonoBehaviour
 
     public GameObject pend;
 
-    LineRenderer line;
+    private int pind;
+
+    LineRenderer line, dropping;
 
     Rot code;
+
+    bool willdraw = true;
 
     Vector3 projec_speed;
 
@@ -27,11 +31,11 @@ public class WaterParticle : MonoBehaviour
     void Start()
     {
         line = GameObject.Find("Line").GetComponent<LineRenderer>();
-        line.startColor = Color.white;
-        line.endColor = Color.white;
+        //line.startColor = Color.white;
+        //line.endColor = Color.white;
 
-        line.startWidth = 0.3f;
-        line.endWidth = 0.3f;
+        //line.startWidth = 0.3f;
+        //line.endWidth = 0.3f;
         projec_speed = Vector3.zero;
         pend = GameObject.Find("Pendulum");
         code = pend.GetComponent<Rot>();
@@ -41,6 +45,10 @@ public class WaterParticle : MonoBehaviour
             projec_speed = new Vector3(projec_speed.x * 2, projec_speed.y*0.5f, projec_speed.z * 2);
 
         }
+        else
+        {
+            willdraw = false;
+        }
         mass = 0.05f;
         velocity = 0f;
         surface = 0f;
@@ -48,6 +56,10 @@ public class WaterParticle : MonoBehaviour
         surface = 3.1415f * r * r;
         transform.localScale = new Vector3(r, r, r);
         PhysicsCalc = new PhysicsCode();
+        dropping = GameObject.Find("DroppingLiquid").GetComponent<LineRenderer>();
+        pind = dropping.positionCount;
+        dropping.positionCount++;
+        dropping.SetPosition(pind, transform.position);
     }
 
     private float abs_dbl(float x)
@@ -62,6 +74,11 @@ public class WaterParticle : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        dropping.SetPosition(pind, transform.position);
+        if(code.State != 1)
+        {
+            Destroy(gameObject);
+        }
         float t = Time.deltaTime; 
         //    line.startColor = Color.white;
         //    line.endColor = Color.white;
@@ -82,13 +99,13 @@ public class WaterParticle : MonoBehaviour
         //    }
         if(line.positionCount==0)
         {
-            if (transform.localPosition.x >= -7.5 && transform.localPosition.x <= 7.5 && transform.localPosition.z >= -7.5 && transform.localPosition.z <= 7.5 && transform.localPosition.y < 0.2)
+            if (transform.localPosition.x >= -7.5 && transform.localPosition.x <= 7.5 && transform.localPosition.z >= -7.5 && transform.localPosition.z <= 7.5 && transform.localPosition.y < 0.2 && code.State == 1 && willdraw)
             {
                 line.positionCount += 2;
                 line.SetPosition(0, new Vector3(transform.localPosition.x, 0.21f, transform.localPosition.z));
                 line.SetPosition(1, new Vector3(transform.localPosition.x, 0.21f, transform.localPosition.z));
             }
-            if ((transform.localPosition.x < -7.5 || transform.localPosition.x > 7.5 || transform.localPosition.z < -7.5 || transform.localPosition.z > 7.5) && transform.localPosition.y < 0)
+            if ((transform.localPosition.x < -7.5 || transform.localPosition.x > 7.5 || transform.localPosition.z < -7.5 || transform.localPosition.z > 7.5) && transform.localPosition.y < 0 && code.State == 1 && willdraw)
             {
                 line.positionCount += 2;
                 line.SetPosition(0, new Vector3(transform.localPosition.x, 0.01f, transform.localPosition.z));
@@ -98,13 +115,13 @@ public class WaterParticle : MonoBehaviour
         }
         else
         {
-            if (transform.localPosition.x >= -7.5 && transform.localPosition.x <= 7.5 && transform.localPosition.z >= -7.5 && transform.localPosition.z <= 7.5 && transform.localPosition.y < 0.2)
+            if (transform.localPosition.x >= -7.5 && transform.localPosition.x <= 7.5 && transform.localPosition.z >= -7.5 && transform.localPosition.z <= 7.5 && transform.localPosition.y < 0.2 && code.State == 1 && willdraw)
             {
                 line.positionCount += 1;
                 line.SetPosition(line.positionCount - 1, new Vector3(transform.localPosition.x, 0.21f, transform.localPosition.z));
                 Destroy(gameObject);
             }
-            if ((transform.localPosition.x < -7.5 || transform.localPosition.x > 7.5 || transform.localPosition.z < -7.5 || transform.localPosition.z > 7.5) && transform.localPosition.y < 0)
+            if ((transform.localPosition.x < -7.5 || transform.localPosition.x > 7.5 || transform.localPosition.z < -7.5 || transform.localPosition.z > 7.5) && transform.localPosition.y < 0 && code.State == 1 && willdraw)
             {
                 line.positionCount += 1;
                 line.SetPosition(line.positionCount - 1, new Vector3(transform.localPosition.x, 0.01f, transform.localPosition.z));

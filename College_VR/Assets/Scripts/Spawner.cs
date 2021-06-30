@@ -16,12 +16,14 @@ public class Spawner : MonoBehaviour
 
     private GameObject drop;
 
+    Rot code;
     // Start is called before the first frame update
     void Start()
     {
+        code = pend.GetComponent<Rot>();
         steps = 9;
         step_size = 0.01f;
-        speedup = 10;
+        speedup = 1;
     }
 
     private void Spawn()
@@ -29,14 +31,18 @@ public class Spawner : MonoBehaviour
         //float x, y, z;
         ////float teta = pend.transform.eulerAngles.y;
         ////float fai = pend.transform.eulerAngles.z;
-        Rot code = pend.GetComponent<Rot>();
         float teta = code.phi;
         float fai = code.theta;
         //x = -15f * Mathf.Sin(teta) * Mathf.Cos(fai);
         //y = -15f * Mathf.Sin(teta) * Mathf.Sin(fai);
         //z = -15f * Mathf.Cos(teta)+19;
-        drop = Instantiate(WaterParticle) as GameObject;
-        drop.transform.position = transform.position;// +new Vector3(step_size * Random.Range(-1 * steps, steps), step_size * Random.Range(-1 * steps, steps), step_size * Random.Range(-1 * steps, steps));
+        for (int i = 0; i < speedup; i++)
+        {
+            drop = Instantiate(WaterParticle) as GameObject;
+            drop.transform.position = new Vector3(transform.position.x - 0.2f * i, transform.position.y, transform.position.z);
+        }
+        //drop = Instantiate(WaterParticle) as GameObject;
+        //drop.transform.position = transform.position;// +new Vector3(step_size * Random.Range(-1 * steps, steps), step_size * Random.Range(-1 * steps, steps), step_size * Random.Range(-1 * steps, steps));
         
         //Vector3 curpos = drop.transform.localPosition;
         ////curpos = curpos + new Vector3(step_size * Random.Range(-1 * steps, steps), step_size * Random.Range(-1 * steps, steps), step_size * Random.Range(-1 * steps, steps));
@@ -48,13 +54,13 @@ public class Spawner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyUp(KeyCode.Space))
+        //if(Input.GetKeyUp(KeyCode.Space))
+        //{
+        //    simul = !simul;
+        //}
+        if (code.State == 1)
         {
-            simul = !simul;
-        }
-        if (simul)
-        {
-            for (int i = 0; i < speedup; i++)
+            if(code.transform.GetChild(3).localScale.y > 0)
             {
                 Spawn();
             }

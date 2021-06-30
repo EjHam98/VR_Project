@@ -49,7 +49,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1495219555016133797}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -109,3 +109,4 @@ MonoBehaviour:
   surface: 0
   r: 0.5
   drop: {fileID: 5152103586781021821, guid: 4b3ef00ac0d05a944a0a877aa36aa8cb, type: 3}
+  pend: {fileID: 0}

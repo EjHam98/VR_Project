@@ -5,30 +5,32 @@ using Assets.Scripts;
 
 public class Rot : MonoBehaviour
 {
-    private const float bucket_mass = 0.5f;
-    private const float paint_liter_mass = 1.354f;
-    private const float surface = 0.48f;
-    private const float rope_length = 12.5f; //0.8m
+    public const float bucket_mass = 0.5f;
+    public const float paint_liter_mass = 1.354f;
+    public const float surface = 0.48f;
+    public const float rope_length = 12.5f; //0.8m
 
-    private int State = 0;
-    private int speedup = 1;
+    public int State = 0;
+    public int speedup = 1;
 
-    public LineRenderer line;
+    public int damping = 5;
+
+    public LineRenderer line, dropping;
     public int currlines = 0;
 
-    private Vector3 eulerAngs, eulerAngs1, eulerAngs2;
-    private float total_mass;
+    public Vector3 eulerAngs, eulerAngs1, eulerAngs2;
+    public float total_mass;
 
-    private float theangle = 0.25f;
+    public float theangle = 0.25f;
 
-    public float liters_of_paint = 18f;
-    private float velocity = 0f;
-    private float r = 0.1f;
+    public float liters_of_paint = -1f;
+    public float velocity = 0f;
+    public float r = 0.1f;
 
-    private float v1 = 0f;
-    private float v2 = 0f;
-    private float theta_max1 = 60f;
-    private float theta_max2 = 60f;
+    public float v1 = 0f;
+    public float v2 = 0f;
+    public float theta_max1 = 60f;
+    public float theta_max2 = 60f;
 
     public Vector3 pos1, pos2;
 
@@ -36,34 +38,42 @@ public class Rot : MonoBehaviour
     public float phi = 0f;
     public float prev_theta = 0f;
     public float prev_phi = 0f;
-    private float vtheta = 0f;
-    private float vphi = 0.5f;
-    private float atheta = 0f;
-    private float aphi = 0f;
+    public float vtheta = 0f;
+    public float vphi = 0.5f;
+    public float atheta = 0f;
+    public float aphi = 0f;
 
-    private float old_th;
-    private float old_ph;
+    public float old_th;
+    public float old_ph;
 
-    private float tm = 0.0f;
-    private float delta_t = 0.02f;
-    private float[] y = { 0.0f, 0.5f, 0.35f, 0f };
+    public float tm = 0.0f;
+    public float delta_t = 0.02f;
+    public float[] y = { 0.0f, 0.5f, 0.35f, 0f };
 
     public int randr = 3;
     public float prand = 0.1f;
 
-    private float curtime;
+    public float curtime;
 
-    private PhysicsCode PhysicsCalc = null;
+    public PhysicsCode PhysicsCalc = null;
 
     // Start is called before the first frame update
     void Start()
     {
+        if (liters_of_paint == -1) liters_of_paint = 20;
+        //damping = 5;
 
         line.positionCount = 0;
+        line.startColor = Color.white;
+        line.endColor = Color.white;
+        line.startWidth = 0.2f;
+        line.endWidth = 0.2f;
         //line.SetPosition(0, Vector3.zero);
         total_mass = bucket_mass + liters_of_paint * paint_liter_mass;
 
         eulerAngs = new Vector3(0f, -1f * y[3] * 180f, -1f * y[2] * 180f);
+
+        transform.GetChild(3).localScale = new Vector3(transform.GetChild(3).localScale.x, 0.9f*0.05f*Mathf.Min(20, Mathf.Max(0, liters_of_paint)), transform.GetChild(3).localScale.z);
 
         //transform.Rotate(Vector3.forward, eulerAngs.z, Space.World);
         //transform.Rotate(Vector3.up, eulerAngs.y, Space.World);
@@ -73,12 +83,19 @@ public class Rot : MonoBehaviour
         prev_theta = 0;
         pos1 = Vector3.zero;
         pos2 = Vector3.zero;
-        transform.GetChild(3).localScale = new Vector3(transform.GetChild(3).localScale.x, Mathf.Max(0, transform.GetChild(3).localScale.y - (transform.GetChild(3).localScale.y / 40000f) * tm), transform.GetChild(3).localScale.z);
-        transform.GetChild(3).localPosition = new Vector3(transform.GetChild(3).localPosition.x, -15.7f + (transform.GetChild(3).GetComponent<Renderer>().bounds.size.y * transform.GetChild(3).localScale.y / 2f), transform.GetChild(3).localPosition.z);
+        //transform.GetChild(3).localScale = new Vector3(transform.GetChild(3).localScale.x, Mathf.Max(0, transform.GetChild(3).localScale.y - (1/3000f)), transform.GetChild(3).localScale.z);
+        //Renderer meesh = transform.GetChild(3).GetComponent<Renderer>();
+        //transform.GetChild(3).localPosition = new Vector3(transform.GetChild(3).localPosition.x, -15.7f + ((meesh.bounds.size.y * transform.GetChild(3).localScale.y) / 2f), transform.GetChild(3).localPosition.z);
+        
         //ApplyMovement();
         //transform.GetChild(0).transform.Rotate(Vector3.up, y[3] * 180f, Space.Self);
         //transform.GetChild(0).transform.Rotate(Vector3.forward, -1f * y[2] * 180f, Space.Self);
-
+        dropping = GameObject.Find("DroppingLiquid").GetComponent<LineRenderer>();
+        dropping.startColor = Color.white;
+        dropping.endColor = Color.white;
+        dropping.startWidth = 0.2f;
+        dropping.endWidth = 0.2f;
+        dropping.positionCount = 0;
     }
 
     void ApplyRotation()
@@ -182,7 +199,8 @@ public class Rot : MonoBehaviour
         //atheta = SignOf(atheta) * (Mathf.Abs(atheta) + t * 0.1f);
         //aphi = SignOf(aphi) * (Mathf.Abs(aphi) + t * 0.1f);
 
-        return new float[4] { atheta, aphi, y[0] - 0.003f, y[1] - 0.003f };
+        return new float[4] { atheta, aphi, y[0] - 0.002f - (0.00025f * Mathf.Max(0, damping - 1)), y[1] - 0.002f - (0.00025f * Mathf.Max(0, damping - 1)) };
+        //return new float[4] { atheta, aphi, y[0] - 0.003f, y[1] - 0.003f };
     }
 
     void ApplyMovement()
@@ -232,6 +250,8 @@ public class Rot : MonoBehaviour
         //transform.GetChild(0).transform.Rotate(Vector3.forward, -1f*(old_th - y[2]) * 180f, Space.Self);
         if (Input.GetKeyUp(KeyCode.U))
         {
+            transform.GetChild(3).localScale = new Vector3(transform.GetChild(3).localScale.x, 0.9f * 0.05f * Mathf.Min(20, Mathf.Max(0, liters_of_paint)), transform.GetChild(3).localScale.z);
+            line.positionCount = 0;
             State = 1;
             theta = theangle;
             phi = 0f;
@@ -289,8 +309,13 @@ public class Rot : MonoBehaviour
         {
             for(int q=0;q<speedup;q++)
             {
-                transform.GetChild(3).localScale = new Vector3(transform.GetChild(3).localScale.x, Mathf.Max(0, transform.GetChild(3).localScale.y - (transform.GetChild(3).localScale.y/40000f) * tm), transform.GetChild(3).localScale.z);
-                transform.GetChild(3).localPosition = new Vector3(transform.GetChild(3).localPosition.x, -16f + (transform.GetChild(3).GetComponent<Renderer>().bounds.size.y*transform.GetChild(3).localScale.y/2f), transform.GetChild(3).localPosition.z);
+                transform.GetChild(3).localScale = new Vector3(transform.GetChild(3).localScale.x, Mathf.Max(0, transform.GetChild(3).localScale.y - (1/3000f)), transform.GetChild(3).localScale.z);
+                if(transform.GetChild(3).localScale.y == 0)
+                {
+                    transform.GetChild(3).GetComponent<Renderer>().enabled = false;
+                }
+                Renderer meesh = transform.GetChild(3).GetComponent<Renderer>();
+                transform.GetChild(3).localPosition = new Vector3(transform.GetChild(3).localPosition.x, Mathf.Min(-15f, -15.7f + (meesh.bounds.size.y*transform.GetChild(3).localScale.y/2f)), transform.GetChild(3).localPosition.z);
                 ApplyRotation();
                 tm += delta_t;
                 float[] tmp = RK4Step(y, tm, delta_t);
