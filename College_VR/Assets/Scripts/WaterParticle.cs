@@ -19,7 +19,7 @@ public class WaterParticle : MonoBehaviour
 
     private int pind;
 
-    LineRenderer line, dropping;
+    public LineRenderer line, dropping;
 
     Rot code;
 
@@ -30,7 +30,7 @@ public class WaterParticle : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        line = GameObject.Find("Line").GetComponent<LineRenderer>();
+        //line = GameObject.Find("Line").GetComponent<LineRenderer>();
         //line.startColor = Color.white;
         //line.endColor = Color.white;
 
@@ -56,10 +56,13 @@ public class WaterParticle : MonoBehaviour
         surface = 3.1415f * r * r;
         transform.localScale = new Vector3(r, r, r);
         PhysicsCalc = new PhysicsCode();
-        dropping = GameObject.Find("DroppingLiquid").GetComponent<LineRenderer>();
-        pind = dropping.positionCount;
-        dropping.positionCount++;
-        dropping.SetPosition(pind, transform.position);
+        //dropping = GameObject.Find("DroppingLiquid").GetComponent<LineRenderer>();
+        if(willdraw)
+        {
+            pind = dropping.positionCount;
+            dropping.positionCount++;
+            dropping.SetPosition(pind, transform.position);
+        }
     }
 
     private float abs_dbl(float x)
@@ -74,88 +77,87 @@ public class WaterParticle : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        dropping.SetPosition(pind, transform.position);
-        if(code.State != 1)
+        if (code.State != 1 || transform.localPosition.y < 0)
         {
             Destroy(gameObject);
         }
-        float t = Time.deltaTime; 
-        //    line.startColor = Color.white;
-        //    line.endColor = Color.white;
+        if(dropping.positionCount > 0 && willdraw)
+        {
+            dropping.SetPosition(pind, transform.position);
+        }
+        float t = Time.deltaTime;
 
-        //    line.startWidth = 0.3f;
-        //    line.endWidth = 0.3f;
 
-        //    if(currlines==0)
-        //    {
-        //        line.positionCount+=2;
-        //        //old_pos = old_pos * -1;
-        //        line.SetPosition(currlines, old_pos);
-        //        currlines++;
-        //        //new_pos = new_pos * -1;
-        //        line.SetPosition(currlines, new_pos);
-        //        currlines++;
-
-        //    }
-        if(line.positionCount==0)
+        if (line.positionCount == 0)
         {
             if (transform.localPosition.x >= -7.5 && transform.localPosition.x <= 7.5 && transform.localPosition.z >= -7.5 && transform.localPosition.z <= 7.5 && transform.localPosition.y < 0.2 && code.State == 1 && willdraw)
             {
                 line.positionCount += 2;
-                line.SetPosition(0, new Vector3(transform.localPosition.x, 0.21f, transform.localPosition.z));
-                line.SetPosition(1, new Vector3(transform.localPosition.x, 0.21f, transform.localPosition.z));
+                line.SetPosition(0, line.worldToLocalMatrix * new Vector3(transform.localPosition.x, 0.21f, transform.localPosition.z));
+                line.SetPosition(1, line.worldToLocalMatrix * new Vector3(transform.localPosition.x, 0.21f, transform.localPosition.z));
             }
             if ((transform.localPosition.x < -7.5 || transform.localPosition.x > 7.5 || transform.localPosition.z < -7.5 || transform.localPosition.z > 7.5) && transform.localPosition.y < 0 && code.State == 1 && willdraw)
             {
                 line.positionCount += 2;
-                line.SetPosition(0, new Vector3(transform.localPosition.x, 0.01f, transform.localPosition.z));
-                line.SetPosition(1, new Vector3(transform.localPosition.x, 0.01f, transform.localPosition.z));
+                line.SetPosition(0, line.worldToLocalMatrix * new Vector3(transform.localPosition.x, 0.01f, transform.localPosition.z));
+                line.SetPosition(1, line.worldToLocalMatrix * new Vector3(transform.localPosition.x, 0.01f, transform.localPosition.z));
                 Destroy(gameObject);
             }
         }
         else
         {
-            if (transform.localPosition.x >= -7.5 && transform.localPosition.x <= 7.5 && transform.localPosition.z >= -7.5 && transform.localPosition.z <= 7.5 && transform.localPosition.y < 0.2 && code.State == 1 && willdraw)
+            if (transform.localPosition.x >= -7.5 && transform.localPosition.x <= 7.5 && transform.localPosition.z >= -7.5 && transform.localPosition.z <= 7.5 && transform.localPosition.y <= 0.21f && code.State == 1 && willdraw)
             {
                 line.positionCount += 1;
-                line.SetPosition(line.positionCount - 1, new Vector3(transform.localPosition.x, 0.21f, transform.localPosition.z));
+                line.SetPosition(line.positionCount - 1, line.worldToLocalMatrix * new Vector3(transform.localPosition.x, 0.21f, transform.localPosition.z));
                 Destroy(gameObject);
             }
-            if ((transform.localPosition.x < -7.5 || transform.localPosition.x > 7.5 || transform.localPosition.z < -7.5 || transform.localPosition.z > 7.5) && transform.localPosition.y < 0 && code.State == 1 && willdraw)
+            if ((transform.localPosition.x < -7.5 || transform.localPosition.x > 7.5 || transform.localPosition.z < -7.5 || transform.localPosition.z > 7.5) && transform.localPosition.y <= 0.01f && code.State == 1 && willdraw)
             {
                 line.positionCount += 1;
-                line.SetPosition(line.positionCount - 1, new Vector3(transform.localPosition.x, 0.01f, transform.localPosition.z));
+                line.SetPosition(line.positionCount - 1, line.worldToLocalMatrix * new Vector3(transform.localPosition.x, 0.01f, transform.localPosition.z));
                 Destroy(gameObject);
             }
         }
-
-        //if (transform.localPosition.x >= -7.5 && transform.localPosition.x <= 7.5 && transform.localPosition.z >= -7.5 && transform.localPosition.z <= 7.5 && transform.localPosition.y < 0.2)
-        //{
-        //    GameObject tmp = Instantiate(drop);
-        //    tmp.transform.localPosition = new Vector3(transform.localPosition.x, tmp.transform.localPosition.y + 0.21f, transform.localPosition.z);
-        //}
-        //if ((transform.localPosition.x < -7.5 || transform.localPosition.x > 7.5 || transform.localPosition.z < -7.5 || transform.localPosition.z > 7.5) && transform.localPosition.y < 0)
-        //{
-        //    GameObject tmp = Instantiate(drop);
-        //    tmp.transform.localPosition = new Vector3(transform.localPosition.x, tmp.transform.localPosition.y + 0.01f, transform.localPosition.z);
-        //}
-        //if (transform.localPosition.x >= -7.5 && transform.localPosition.x <= 7.5 && transform.localPosition.z >= -7.5 && transform.localPosition.z <= 7.5 && transform.localPosition.y < 0.2)
-        //{
-        //    RawImage tmp = Instantiate(drop);
-        //    tmp.transform.localPosition = new Vector3(transform.localPosition.x, 0, transform.localPosition.z);
-        //    tmp.transform.parent = board.transform;
-        //}
-        //if ((transform.localPosition.x < -7.5 || transform.localPosition.x > 7.5 || transform.localPosition.z < -7.5 || transform.localPosition.z > 7.5) && transform.localPosition.y < 0)
-        //{
-        //    RawImage tmp = Instantiate(drop);
-        //    tmp.transform.localPosition = new Vector3(transform.localPosition.x, 0, transform.localPosition.z);
-        //    tmp.transform.parent = ground.transform;
-        //}
-        projec_speed = projec_speed * 0.95f;
-        if (transform.localPosition.y < -1 || transform.localPosition.y > 100)
+        if (transform.localPosition.y == 0)
         {
             Destroy(gameObject);
         }
+
+        //if (line.positionCount == 0)
+        //{
+        //    if (transform.localPosition.x >= -7.5 && transform.localPosition.x <= 7.5 && transform.localPosition.z >= -7.5 && transform.localPosition.z <= 7.5 && transform.localPosition.y < 0.2 && code.State == 1 && willdraw)
+        //    {
+        //        line.positionCount += 2;
+        //        line.SetPosition(0, new Vector3(transform.localPosition.x, 0.21f, transform.localPosition.z));
+        //        line.SetPosition(1, new Vector3(transform.localPosition.x, 0.21f, transform.localPosition.z));
+        //    }
+        //    if ((transform.localPosition.x < -7.5 || transform.localPosition.x > 7.5 || transform.localPosition.z < -7.5 || transform.localPosition.z > 7.5) && transform.localPosition.y < 0 && code.State == 1 && willdraw)
+        //    {
+        //        line.positionCount += 2;
+        //        line.SetPosition(0, new Vector3(transform.localPosition.x, 0.01f, transform.localPosition.z));
+        //        line.SetPosition(1, new Vector3(transform.localPosition.x, 0.01f, transform.localPosition.z));
+        //        Destroy(gameObject);
+        //    }
+        //}
+        //else
+        //{
+        //    if (transform.localPosition.x >= -7.5 && transform.localPosition.x <= 7.5 && transform.localPosition.z >= -7.5 && transform.localPosition.z <= 7.5 && transform.localPosition.y < 0.2 && code.State == 1 && willdraw)
+        //    {
+        //        line.positionCount += 1;
+        //        line.SetPosition(line.positionCount - 1, new Vector3(transform.localPosition.x, 0.21f, transform.localPosition.z));
+        //        Destroy(gameObject);
+        //    }
+        //    if ((transform.localPosition.x < -7.5 || transform.localPosition.x > 7.5 || transform.localPosition.z < -7.5 || transform.localPosition.z > 7.5) && transform.localPosition.y < 0 && code.State == 1 && willdraw)
+        //    {
+        //        line.positionCount += 1;
+        //        line.SetPosition(line.positionCount - 1, new Vector3(transform.localPosition.x, 0.01f, transform.localPosition.z));
+        //        Destroy(gameObject);
+        //    }
+        //}
+
+
+        projec_speed = projec_speed * 0.95f;
         float total_force = -5f*PhysicsCalc.getGravity(mass).y - PhysicsCalc.getAirResistance(surface, velocity);
         float acceleration = total_force / mass;
         float speed = velocity + abs_dbl(acceleration) * t;
